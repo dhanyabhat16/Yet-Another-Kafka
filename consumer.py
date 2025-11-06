@@ -6,7 +6,7 @@ import httpx
 from fastapi import FastAPI, Request
 from typing import Dict
 import threading
-from python_dotenv import load_dotenv
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -21,28 +21,53 @@ CONSUMER_PORT = int(os.environ.get("CONSUMER_PORT", 7000))
 
 
 def offset_file(topic):
-    return os.path.join(OFFSET_DIR, f"offset_{topic}.txt")
+    return os.path.join(OFFSET_DIR, f"offset_{topic}.json")
 
 
 def load_offsets() -> Dict[str, int]:
+    """
+    Load offsets for all topics from files.
+    Returns a dict of topic -> offset.
+    ## Args:
+    - Topics: List of topics to load offsets for.
+    - Offset Directory: Directory where offset files are stored.
+    ## Returns:
+    - A dictionary mapping topic names to their offsets.
+
+    """
     out = {}
     for t in TOPICS:
         fn = offset_file(t)
         try:
             with open(fn, "r") as f:
-                out[t] = int(f.read().strip())
-        except Exception as e:
-            print(f"Error loading offset for topic {t}: {e}")
+                data = json.load(f)
+            # Accept multiple possible JSON shapes: an int, {"offset": n}, {topic: n}, or a single-value dict
+            if isinstance(data, int):
+                out[t] = data
+            elif isinstance(data, dict):
+                if "offset" in data and isinstance(data["offset"], int):
+                    out[t] = data["offset"]
+                elif t in data and isinstance(data[t], int):
+                    out[t] = data[t]
+                else:
+                    ints = [v for v in data.values() if isinstance(v, int)]
+                    out[t] = ints[0] if ints else -1
+            else:
+                out[t] = -1
+        except FileNotFoundError:
+            # If the offset file doesn't exist yet, default to -1
             out[t] = -1
     return out
 
 
-def save_offset(topic, offset):
+def save_offset(topic: str, offset: int) -> None:
+    """Persist offset as JSON so load_offsets can parse numeric values reliably"""
     with open(offset_file(topic), "w") as f:
-        f.write(str(offset))
+        json.dump(offset, f)
 
 
-def find_leader():
+def find_leader() -> str:
+    """Discover the current leader broker from the list of brokers."""
     for b in LEADER_DISCOVERY:
         try:
             r = httpx.get(f"{b}/metadata/leader", timeout=2.0).json()
@@ -56,12 +81,14 @@ def find_leader():
 
 
 @app.get("/offsets")
-def offsets():
+def offsets() -> Dict[str, int]:
+    """Calling load_offsets to retrieve current offsets on the /offsets endpoint"""
     return load_offsets()
 
 
 @app.get("/pull")
-def pull(topic: str, from_offset: int, to_offset: int):
+def pull(topic: str, from_offset: int, to_offset: int) -> Dict[str, int]:
+    """Pull messages for a topic from from_offset to to_offset from the leader broker on the /pull endpoint."""
     # on broker instruction, pull from leader then update local offset
     leader = find_leader()
     if not leader:
@@ -88,8 +115,12 @@ def pull(topic: str, from_offset: int, to_offset: int):
 
 
 @app.get("/health")
-def health():
-    return {"ok": True}
+def health() -> Dict[str, bool]:
+    """Health check endpoint."""
+    try:
+        return {"ok": True}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 if __name__ == "__main__":

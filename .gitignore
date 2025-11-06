@@ -11,4 +11,5 @@ logs/
 *.log
 data/
 output/
+consumer_offsets/
 
