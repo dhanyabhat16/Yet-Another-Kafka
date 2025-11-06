@@ -3,3 +3,4 @@ uvicorn[standard]
 httpx
 redis>=4.5.0
 pydantic
+python-dotenv
