@@ -1,20 +1,24 @@
 # consumer.py
 import os
-import time
 import json
+import asyncio
 import httpx
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from typing import Dict
-import threading
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
-TOPICS = os.environ.get("KNOWN_TOPICS", "topic1, topic2, topic3").split(",")
-LEADER_DISCOVERY = os.environ.get(
-    "BROKERS", "172.24.248.219:8000,172.24.224.84:8000"
-).split(",")
+TOPICS = [
+    t.strip() for t in os.environ.get("KNOWN_TOPICS", "topic1,topic2,topic3").split(",")
+]
+BROKERS = [
+    f"http://{b}" if not b.startswith("http") else b
+    for b in os.environ.get("BROKERS", "172.24.248.219:8000,172.24.224.84:8000").split(
+        ","
+    )
+]
 OFFSET_DIR = os.path.join(os.getcwd(), "consumer_offsets")
 os.makedirs(OFFSET_DIR, exist_ok=True)
 CONSUMER_PORT = int(os.environ.get("CONSUMER_PORT", 7000))
@@ -74,30 +78,27 @@ def map_ip_to_host(ip: str) -> str:
 
 def find_leader() -> str:
     """Discover the current leader broker from the list of brokers."""
-    # LEADER_DISCOVERY contains broker base URLs like http://host:port
-    for b in LEADER_DISCOVERY:
+    for broker_url in BROKERS:
         try:
-            resp = httpx.get(f"{b}/metadata/leader", timeout=2.0)
+            url = broker_url.rstrip("/") + "/metadata/leader"
+            resp = httpx.get(url, timeout=2.0)
             j = resp.json()
             leader = j.get("leader")
-            self_addr = j.get("self")
-            # If the leader value already encodes host:port, return it.
-            if leader and ":" in str(leader):
-                # strip any http scheme if present
-                return str(leader).replace("http://", "").replace("https://", "")
-            # If this broker reports that it is the leader, return its self address
-            if leader and self_addr and str(leader) == str(self_addr):
-                return str(self_addr)
-            # As a fallback, if the metadata returns 'self' and it equals this broker
-            if self_addr and resp.url.host:
-                # return the broker address we just queried (host:port)
-                host = resp.url.host
-                port = resp.url.port
-                if host and port:
-                    return f"{map_ip_to_host(host)}:{host}:{port}"
+
+            if leader:
+                leader = leader.strip().lower()
+                # Map node name to IP:port
+                if leader == "node1":
+                    return "172.24.224.84:8000"
+                elif leader == "node2":
+                    return "172.24.248.219:8000"
+                else:
+                    # If it's already in IP:port format
+                    return leader
         except Exception as e:
-            print(f"Error finding leader in broker {b}: {e}")
+            print(f"[consumer] Error finding leader in broker {broker_url}: {e}")
             continue
+    print("[consumer] ⚠ No leader found")
     return None
 
 
@@ -149,9 +150,9 @@ def pull(topic: str, from_offset: int, to_offset: int = None) -> Dict[str, int]:
         except Exception:
             payload = str(p)
         print(f"CONSUME {topic} {cur_offset} -> {payload}")
-        save_offset(topic, cur_offset)
         pulled += 1
         cur_offset += len(p) + 1  # account for terminating newline byte
+        save_offset(topic, cur_offset)  # Save AFTER incrementing to next message
 
     return {"pulled": pulled}
 
@@ -165,8 +166,42 @@ def health() -> Dict[str, bool]:
         return {"error": str(e)}
 
 
+async def consume_task():
+    """Background task to continuously consume messages from all topics."""
+    print("[consumer] Starting background consumption task...")
+    while True:
+        try:
+            offsets = load_offsets()
+            for topic in TOPICS:
+                # Start from 0 if no offset exists yet (not -1, as brokers reject negative offsets)
+                current_offset = offsets.get(topic, 0)
+                if current_offset < 0:
+                    current_offset = 0
+                result = pull(topic, from_offset=current_offset)
+                if result.get("pulled", 0) > 0:
+                    print(
+                        f"[consumer] ✓ Pulled {result['pulled']} messages from {topic}"
+                    )
+            await asyncio.sleep(2)  # Poll every 2 seconds
+        except Exception as e:
+            print(f"[consumer] Error in consume_task: {e}")
+            await asyncio.sleep(5)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start the background consumption task on app startup."""
+    asyncio.create_task(consume_task())
+    print("[consumer] Startup complete - listening for messages...")
+
+
 if __name__ == "__main__":
     import uvicorn
 
-    print("Starting consumer, topics:", TOPICS)
-    uvicorn.run(app, host="172.24.165.219", port=CONSUMER_PORT)
+    print("=" * 60)
+    print("YAK Consumer - Auto-Consumption Mode")
+    print("=" * 60)
+    print(f"Topics: {TOPICS}")
+    print(f"Brokers: {BROKERS}")
+    print("=" * 60)
+    uvicorn.run(app, host="0.0.0.0", port=7000)
