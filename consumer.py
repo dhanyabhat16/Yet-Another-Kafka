@@ -11,9 +11,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
-TOPICS = os.environ.get("KNOWN_TOPICS", "sports,finance").split(",")
+TOPICS = os.environ.get("KNOWN_TOPICS", "topic1, topic2, topic3").split(",")
 LEADER_DISCOVERY = os.environ.get(
-    "BROKERS", "http://127.0.0.1:8000,http://127.0.0.1:8001"
+    "BROKERS", "172.24.248.219:8000,172.24.224.84:8000"
 ).split(",")
 OFFSET_DIR = os.path.join(os.getcwd(), "consumer_offsets")
 os.makedirs(OFFSET_DIR, exist_ok=True)
@@ -66,14 +66,35 @@ def save_offset(topic: str, offset: int) -> None:
         json.dump(offset, f)
 
 
+def map_ip_to_host(ip: str) -> str:
+    """Map an IP address to a hostname using a predefined mapping."""
+    ip_host_map = {"172.24.224.84": "node1", "172.24.248.219": "node2"}
+    return ip_host_map.get(ip, ip)
+
+
 def find_leader() -> str:
     """Discover the current leader broker from the list of brokers."""
+    # LEADER_DISCOVERY contains broker base URLs like http://host:port
     for b in LEADER_DISCOVERY:
         try:
-            r = httpx.get(f"{b}/metadata/leader", timeout=2.0).json()
-            leader = r.get("leader")
-            if leader:
-                return leader
+            resp = httpx.get(f"{b}/metadata/leader", timeout=2.0)
+            j = resp.json()
+            leader = j.get("leader")
+            self_addr = j.get("self")
+            # If the leader value already encodes host:port, return it.
+            if leader and ":" in str(leader):
+                # strip any http scheme if present
+                return str(leader).replace("http://", "").replace("https://", "")
+            # If this broker reports that it is the leader, return its self address
+            if leader and self_addr and str(leader) == str(self_addr):
+                return str(self_addr)
+            # As a fallback, if the metadata returns 'self' and it equals this broker
+            if self_addr and resp.url.host:
+                # return the broker address we just queried (host:port)
+                host = resp.url.host
+                port = resp.url.port
+                if host and port:
+                    return f"{map_ip_to_host(host)}:{host}:{port}"
         except Exception as e:
             print(f"Error finding leader in broker {b}: {e}")
             continue
@@ -87,31 +108,52 @@ def offsets() -> Dict[str, int]:
 
 
 @app.get("/pull")
-def pull(topic: str, from_offset: int, to_offset: int) -> Dict[str, int]:
-    """Pull messages for a topic from from_offset to to_offset from the leader broker on the /pull endpoint."""
-    # on broker instruction, pull from leader then update local offset
+def pull(topic: str, from_offset: int, to_offset: int = None) -> Dict[str, int]:
+    """Pull messages for a topic from the leader broker's /consume endpoint.
+
+    The brokers expose a byte-oriented /consume endpoint which returns raw messages
+    appended as lines (message + "\n"). Offsets are byte offsets. This endpoint
+    will request the leader's /consume?topic=<>&offset=<from_offset> and parse the
+    returned bytes, splitting on newlines and advancing byte offsets accordingly.
+    """
     leader = find_leader()
     if not leader:
         return {"error": "no leader"}
+
+    # ensure we have a non-negative start offset
+    if from_offset is None or from_offset < 0:
+        from_offset = 0
+
+    # leader should be host:port
+    url = f"http://{leader}/consume/"
     try:
-        r = httpx.get(
-            f"http://{leader}/consume",
-            params={"topic": topic, "from_offset": from_offset, "to_offset": to_offset},
-            timeout=10.0,
-        )
+        r = httpx.get(url, params={"topic": topic, "offset": from_offset}, timeout=10.0)
     except Exception as e:
         return {"error": str(e)}
+
     if r.status_code != 200:
         return {"error": f"leader returned {r.status_code}"}
-    j = r.json()
-    msgs = j.get("messages", [])
-    if not msgs:
+
+    raw = r.content
+    if not raw:
         return {"pulled": 0}
-    for m in msgs:
-        # process message locally - here we just print and update offset
-        print(f"CONSUME {topic} {m['offset']} -> {m['payload']}")
-        save_offset(topic, m["offset"])
-    return {"pulled": len(msgs)}
+
+    parts = raw.split(b"\n")
+    pulled = 0
+    cur_offset = from_offset
+    for p in parts:
+        if not p:
+            continue
+        try:
+            payload = p.decode("utf-8", errors="replace")
+        except Exception:
+            payload = str(p)
+        print(f"CONSUME {topic} {cur_offset} -> {payload}")
+        save_offset(topic, cur_offset)
+        pulled += 1
+        cur_offset += len(p) + 1  # account for terminating newline byte
+
+    return {"pulled": pulled}
 
 
 @app.get("/health")
@@ -127,4 +169,4 @@ if __name__ == "__main__":
     import uvicorn
 
     print("Starting consumer, topics:", TOPICS)
-    uvicorn.run(app, host="0.0.0.0", port=CONSUMER_PORT)
+    uvicorn.run(app, host="172.24.165.219", port=CONSUMER_PORT)
