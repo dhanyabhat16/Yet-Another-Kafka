@@ -8,6 +8,8 @@ import requests
 
 isleader=False
 
+is_catching_up=True
+
 MY_ID="node2" #follower start state
 
 RENEW_LUA = """
@@ -49,15 +51,17 @@ r=redis.Redis(
 app=FastAPI()
 
 def set_hwm(topic: str, hwm: int):
-    r.hset(f"hwm:{topic}", "offset", hwm)  # key, field="offset", value
+    print("setting hwm")
+    r.hset(f"hwm:{topic}", "offset", hwm)  #key, field="offset", value
 
 def get_hwm(topic: str) -> int:
-    val = r.hget(f"hwm:{topic}", "offset")
+    print("getting hwm")
+    val=r.hget(f"hwm:{topic}", "offset")
     return int(val) if val is not None else 0
 
 @app.post("/produce/")
 async def produce(request: Request):
-
+    print("produce accessed!!")
     if not isleader:
         raise HTTPException(403, "Follower cannot accept produce")
     
@@ -71,23 +75,25 @@ async def produce(request: Request):
     #replicate code:
     replicate_url = f"http://{OTHER_BROKER_IP}:8000/internal/replicate"
     topic_header={"Topic":topic}
-    response=requests.post(replicate_url, headers=topic_header, data=data,timeout=2)
+    try:
+        response=requests.post(replicate_url, headers=topic_header, data=data,timeout=2)
     
-    if response.status_code==200:
-        print("Follower ACK:", response.json())
-        with open(topics[topic][0],'ab') as f:
-            f.write(data+b"\n")
-        topics[topic][1]+=(len(data)+1)
-        print(f"Written {len(data)+1} bytes to {topic} dir's log file")
-        set_hwm(topic,topics[topic][1])
-        return topics[topic][1]
-
-    else:
-        print("Replication failed:", response.text)
-        raise HTTPException(500, "Replication failed")
+        if response.status_code==200:
+            print("Follower ACK:", response.json())
+        else:
+            print("Follower not reachable, continuing...")
+    except Exception as e:
+        print(f"Follower unreachable, degraded mode... error:{e}")
+    with open(topics[topic][0],'ab') as f:
+        f.write(data+b"\n")
+    topics[topic][1]+=(len(data)+1)
+    print(f"Written {len(data)+1} bytes to {topic} dir's log file")
+    set_hwm(topic,topics[topic][1])
+    return topics[topic][1]
     
 @app.get("/consume/")
 async def handle_consume(topic :str, offset :int): #assume consumer sends GET /consume/topic?=topic1&&offset?=5
+    print("handle_consumer")
     if not isleader:
         raise HTTPException(403, "Follower cannot accept consume")
     
@@ -108,10 +114,20 @@ async def handle_consume(topic :str, offset :int): #assume consumer sends GET /c
 async def create_replica(request: Request):
     if isleader:
         raise HTTPException(403, "Leader cannot accept replicate")
+
+    if is_catching_up:
+        return {"status": "skipped during catchup"}
     
     topic=request.headers.get("Topic")
     if not topic:
         raise HTTPException(400,"Missing topic in headers!!\n")
+    
+    msg_id=request.headers.get("Idempotency-Key")
+    if msg_id:
+        # If already replicated, skip write
+        if r.sismember("replicated_ids", msg_id):
+            return {"status": "duplicate skipped"}
+
     
     data: bytes=await request.body()
 
@@ -120,13 +136,19 @@ async def create_replica(request: Request):
 
     topics[topic][1]+=(len(data)+1)
     print(f"Written {len(data)+1} bytes to {topic} dir's log file")
+
+    if msg_id:
+        r.sadd("replicated_ids", msg_id)
+
     return {"status_code":200}
 
 @app.get("/metadata/leader")
 async def metadata_leader():
+    print("metadata/leader")
     return {"leader":r.get("leader")}
 
 async def lease_manager():
+    print("lease_manager")
     global isleader
     key="leader"
     while True:
@@ -151,7 +173,7 @@ async def lease_manager():
                     print(f"{MY_ID} acquired leadership")
                     for topic_name, topic_data in topics.items():
                         if os.path.exists(topic_data[0]):
-                            topics[topic_name][1] = os.path.getsize(topic_data[0])
+                            topics[topic_name][1]=os.path.getsize(topic_data[0])
                     isleader=True
                 else:
                     pass
@@ -162,17 +184,66 @@ async def lease_manager():
 
         await asyncio.sleep(RENEW_LEASE if isleader else FOLLOWER_CHECK_INTERVAL)
 
+async def catch_up_if_behind():
+
+    #When follower starts up and realizes it's behind HWM, fetches missing data from the current leader
+
+    await asyncio.sleep(2)  #Waiting for lease_manager to stabilize
+    
+    if isleader:
+        return
+    
+    print("Checking if catch-up is needed...")
+    
+    for topic in topics.keys():
+        local_offset=topics[topic][1] #alr read on startup when follower starts up
+        redis_hwm=get_hwm(topic)
+        
+        if local_offset<redis_hwm:
+            print(f"NODE IS BEHIND on {topic}: local offset={local_offset}, HWM={redis_hwm}")
+            print(f"Fetching missing data from current leader...")
+            
+            try:
+                #Fetch missing data from current leader
+                response=requests.get(
+                    f"http://{OTHER_BROKER_IP}:8000/consume/",
+                    params={"topic": topic, "offset": local_offset},
+                    timeout=5
+                )
+                
+                if response.status_code==200:
+                    missing_data=response.content
+                    
+                    #Write missing data to local log file
+                    with open(topics[topic][0], 'ab') as f:
+                        f.write(missing_data)
+                    
+                    #Update local offset to match HWM
+                    topics[topic][1]=redis_hwm
+                    print(f"Caught up on {topic}! Now at offset {redis_hwm}!")
+                else:
+                    print(f"Catch-up failed: {response.status_code}")
+                    
+            except Exception as e:
+                print(f"Catch-up error for {topic}: {e}")
+        else:
+            print(f"{topic} is up-to-date! (offset={local_offset})")
+    global is_catching_up
+    is_catching_up=False
+
 @app.on_event("startup")
 async def start_tasks():
     for key in topics.keys():
         os.makedirs(key, exist_ok=True)
-        log_path = os.path.join(key, file_name)
+        log_path=os.path.join(key, file_name)
         
-        # Load both disk offset and Redis HWM, use minimum
-        disk_offset = os.path.getsize(log_path) if os.path.exists(log_path) else 0
-        redis_hwm = get_hwm(key)
-        actual_offset = min(redis_hwm, disk_offset) if redis_hwm > 0 else disk_offset
+        #Load both curr on disk offset and Redis HWM, use the minimum
+        disk_offset=os.path.getsize(log_path) if os.path.exists(log_path) else 0
+        redis_hwm=get_hwm(key)
+        actual_offset=min(redis_hwm, disk_offset) if redis_hwm > 0 else disk_offset
         
-        topics[key] = [log_path, actual_offset]
+        topics[key]=[log_path, actual_offset]
 
     asyncio.create_task(lease_manager())
+    asyncio.create_task(catch_up_if_behind())
+    print("STARTED!!!!")
