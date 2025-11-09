@@ -13,3 +13,4 @@ data/
 output/
 consumer_offsets/
 consumer_data/
+consumer-1.py

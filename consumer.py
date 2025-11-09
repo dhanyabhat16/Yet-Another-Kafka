@@ -124,6 +124,9 @@ def get_group_key(topic: str, payload_obj, offset: int) -> str:
     return f"offset_{offset}"
 
 
+
+
+
 def merge_into_joined(
     key: str, topic: str, payload_raw: str, payload_obj, offset: int
 ) -> None:
@@ -198,6 +201,29 @@ def merge_into_joined(
         print(f"[consumer] Error updating joined index {index_fn}: {e}")
 
 
+def write_message_csv(
+    topic: str, group_key: str, offset: int, payload_raw: str
+) -> None:
+    """Append a message to a CSV file grouped by topic and group_key.
+
+    CSV columns: offset, timestamp_iso, payload_json
+    """
+    topic_dir = os.path.join(DATA_DIR, topic)
+    os.makedirs(topic_dir, exist_ok=True)
+    safe_key = safe_key_for_filename(group_key)
+    fn = os.path.join(topic_dir, f"{safe_key}.csv")
+    write_header = not os.path.exists(fn)
+    ts = datetime.utcnow().isoformat() + "Z"
+    try:
+        with open(fn, "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if write_header:
+                writer.writerow(["offset", "timestamp", "payload"])
+            writer.writerow([offset, ts, payload_raw])
+    except Exception as e:
+        print(f"[consumer] Error writing message to {fn}: {e}")
+
+
 def extract_id(payload_obj) -> str:
     """Extract the document _id (prefer $oid) from payload object if present."""
     if not isinstance(payload_obj, dict):
@@ -208,10 +234,7 @@ def extract_id(payload_obj) -> str:
         oid = _id.get("$oid")
         if oid:
             return str(oid)
-    elif isinstance(_id, str):
-        # plain string _id
-        return _id
-    return None
+            return None
 
 
 def write_topic_row(topic: str, payload_obj, offset: int) -> None:
@@ -436,14 +459,14 @@ def pull(topic: str, from_offset: int, to_offset: int = None) -> Dict[str, int]:
         except Exception:
             payload_obj = None
 
-        # Write structured per-topic row to consolidated CSV
+        group_key = get_group_key(topic, payload_obj, msg_offset)
+        # persist the message grouped by the derived key
+        write_message_csv(topic, group_key, msg_offset, payload)
+        # also write structured per-topic row (columns) when available
         try:
             write_topic_row(topic, payload_obj, msg_offset)
         except Exception as e:
             print(f"[consumer] Warning: write_topic_row failed: {e}")
-        
-        # Get group key for joined records
-        group_key = get_group_key(topic, payload_obj, msg_offset)
 
         # use document _id as the canonical join key when available
         try:
