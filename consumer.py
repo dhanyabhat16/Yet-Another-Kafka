@@ -17,7 +17,7 @@ TOPICS = [
 ]
 BROKERS = [
     f"http://{b}" if not b.startswith("http") else b
-    for b in os.environ.get("BROKERS", "172.24.248.219:8000,172.24.224.84:8000").split(
+    for b in os.environ.get("BROKERS", "<NODE_1_IP>:8000,<NODE_2_IP>:8000").split(
         ","
     )
 ]
