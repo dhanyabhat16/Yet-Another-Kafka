@@ -1,0 +1,873 @@
+[
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471ead8"
+    },
+    "grades": [
+      10,
+      12,
+      9,
+      21
+    ],
+    "name": "S and T Bagels and Deli",
+    "contact": {
+      "phone": "706-555-0166",
+      "email": "sandtbagelsanddeli@example.net",
+      "location": [
+        -74.10499469999999,
+        40.6309326
+      ]
+    },
+    "stars": 4,
+    "categories": [
+      "Juice"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e495"
+    },
+    "grades": [
+      13,
+      7,
+      14,
+      18,
+      4
+    ],
+    "name": "Sushi Of Gari",
+    "contact": {
+      "phone": "211-555-0114",
+      "email": "sushiofgari@example.com",
+      "location": [
+        -73.952859,
+        40.771247
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Chinese"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fbe4"
+    },
+    "grades": [
+      4,
+      2,
+      10,
+      4
+    ],
+    "name": "Eventfull Nyc",
+    "contact": {
+      "phone": "846-555-0125",
+      "email": "eventfullnyc@example.org",
+      "location": [
+        -73.9936274,
+        40.689799
+      ]
+    },
+    "stars": 5,
+    "categories": [
+      "Japanese",
+      "Chilean",
+      "Portuguese",
+      "Cajun"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e19a"
+    },
+    "grades": [
+      10,
+      10,
+      12,
+      12
+    ],
+    "name": "Ryan Maguire'S Bar and Restaurant",
+    "contact": {
+      "phone": "111-555-0188",
+      "email": "ryanmaguire'sbarandrestaurant@example.net",
+      "location": [
+        -74.00513529999999,
+        40.7081169
+      ]
+    },
+    "stars": 0,
+    "categories": [
+      "Tex-Mex",
+      "Moroccan",
+      "Yogurt",
+      "Creole",
+      "Chilean"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d62f57802807471de53"
+    },
+    "grades": [
+      13,
+      12,
+      12,
+      12,
+      23
+    ],
+    "name": "Kasteli Ii",
+    "contact": {
+      "phone": "355-555-0102",
+      "email": "kasteliii@example.org",
+      "location": [
+        -73.995662,
+        40.748717
+      ]
+    },
+    "stars": 3,
+    "categories": [
+      "Moroccan",
+      "Salads",
+      "Indian",
+      "Egyptian",
+      "Vegetables"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fe9f"
+    },
+    "grades": [
+      10,
+      10,
+      18,
+      9,
+      16,
+      12
+    ],
+    "name": "Good To Go",
+    "contact": {
+      "phone": "396-555-0176",
+      "email": "goodtogo@example.org",
+      "location": [
+        -73.843486,
+        40.851401
+      ]
+    },
+    "stars": 4,
+    "categories": [
+      "Korean"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e90d"
+    },
+    "grades": [
+      11,
+      4,
+      7,
+      9
+    ],
+    "name": "Starbucks Coffee",
+    "contact": {
+      "phone": "209-555-0188",
+      "email": "starbuckscoffee@example.net",
+      "location": [
+        -73.9544765,
+        40.7871231
+      ]
+    },
+    "stars": 0,
+    "categories": [
+      "Pretzels",
+      "Chinese",
+      "Middle Eastern"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807472009e"
+    },
+    "grades": [
+      20,
+      12,
+      20,
+      10,
+      5,
+      13,
+      25,
+      13
+    ],
+    "name": "Happy Garden Palace",
+    "contact": {
+      "phone": "198-555-0160",
+      "email": "happygardenpalace@example.org",
+      "location": [
+        -73.995513,
+        40.713818
+      ]
+    },
+    "stars": 0,
+    "categories": [
+      "Nuts",
+      "Chinese",
+      "Juice"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471f939"
+    },
+    "grades": [
+      9,
+      13,
+      12,
+      5,
+      2
+    ],
+    "name": "Saigon Vietnamese Sandwich",
+    "contact": {
+      "phone": "279-555-0121",
+      "email": "saigonvietnamesesandwich@example.net",
+      "location": [
+        -73.9959432,
+        40.7200254
+      ]
+    },
+    "stars": 5,
+    "categories": [
+      "Ethiopian",
+      "Indonesian",
+      "Brazilian"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471f034"
+    },
+    "grades": [
+      13,
+      24,
+      6,
+      19,
+      11,
+      7
+    ],
+    "name": "El Dorado Restaurant",
+    "contact": {
+      "phone": "586-555-0126",
+      "email": "eldoradorestaurant@example.com",
+      "location": [
+        -73.8146146,
+        40.702732
+      ]
+    },
+    "stars": 2,
+    "categories": [
+      "Kosher",
+      "Fruit Salads",
+      "Waffles",
+      "Other"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807472007a"
+    },
+    "grades": [
+      12,
+      13,
+      13,
+      9,
+      16,
+      13
+    ],
+    "name": "Gt Mobay",
+    "contact": {
+      "phone": "791-555-0127",
+      "email": "gtmobay@example.org",
+      "location": [
+        -73.8196363,
+        40.677519
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Chinese",
+      "Pancakes"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fcda"
+    },
+    "grades": [
+      13,
+      11,
+      12,
+      12,
+      10,
+      5
+    ],
+    "name": "New Yummy Taco",
+    "contact": {
+      "phone": "354-555-0175",
+      "email": "newyummytaco@example.org",
+      "location": [
+        -73.95468,
+        40.731406
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Salads",
+      "Cambodian",
+      "Pizza",
+      "Chinese"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fcef"
+    },
+    "grades": [
+      11,
+      4,
+      7,
+      7,
+      10
+    ],
+    "name": "Marthas Country Bakery",
+    "contact": {
+      "phone": "310-555-0142",
+      "email": "marthascountrybakery@example.com",
+      "location": [
+        -73.9073799,
+        40.7740987
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Continental",
+      "Turkish",
+      "Continental",
+      "Hotdogs",
+      "Pakistani"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e623"
+    },
+    "grades": [
+      11,
+      12,
+      2,
+      12
+    ],
+    "name": "Mcdonald'S",
+    "contact": {
+      "phone": "934-555-0156",
+      "email": "mcdonald's@example.org",
+      "location": [
+        -73.9863096,
+        40.69069349999999
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Cafe",
+      "Portuguese"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fc5a"
+    },
+    "grades": [
+      12,
+      12,
+      18,
+      13,
+      22,
+      12
+    ],
+    "name": "Kennedy Fried Chicken",
+    "contact": {
+      "phone": "899-555-0120",
+      "email": "kennedyfriedchicken@example.org",
+      "location": [
+        -73.93778549999999,
+        40.801592
+      ]
+    },
+    "stars": 4,
+    "categories": [
+      "Scandinavian",
+      "Chilean",
+      "Delicatessen",
+      "Juice",
+      "Mediterranean"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e758"
+    },
+    "grades": [
+      2,
+      5,
+      11
+    ],
+    "name": "Starbucks Coffee",
+    "contact": {
+      "phone": "151-555-0197",
+      "email": "starbuckscoffee@example.net",
+      "location": [
+        -73.8400645,
+        40.66139099999999
+      ]
+    },
+    "stars": 3,
+    "categories": [
+      "Tea",
+      "Fruit Salads",
+      "German"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807472014d"
+    },
+    "grades": [
+      11,
+      10,
+      11,
+      9
+    ],
+    "name": "Kosher Pizza Time",
+    "contact": {
+      "phone": "374-555-0115",
+      "email": "kosherpizzatime@example.net",
+      "location": [
+        -73.9624134,
+        40.6248869
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "South and Central American",
+      "Brazilian"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d62f57802807471de0b"
+    },
+    "grades": [
+      13,
+      12,
+      8,
+      9,
+      3
+    ],
+    "name": "Smith and Wollensky",
+    "contact": {
+      "phone": "586-555-0126",
+      "email": "smithandwollensky@example.com",
+      "location": [
+        -73.9704988,
+        40.7552269
+      ]
+    },
+    "stars": 5,
+    "categories": [
+      "Mediterranean",
+      "Creole",
+      "Pretzels",
+      "Ethiopian"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807472017d"
+    },
+    "grades": [
+      5,
+      12,
+      10,
+      29,
+      13,
+      16
+    ],
+    "name": "Saraghina",
+    "contact": {
+      "phone": "594-555-0197",
+      "email": "saraghina@example.net",
+      "location": [
+        -73.9353613,
+        40.6836488
+      ]
+    },
+    "stars": 4,
+    "categories": [
+      "Ethiopian",
+      "Juice",
+      "Russian",
+      "Cuban"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fb82"
+    },
+    "grades": [
+      12,
+      7,
+      9,
+      5,
+      4
+    ],
+    "name": "Bacaro",
+    "contact": {
+      "phone": "212-555-0172",
+      "email": "bacaro@example.com",
+      "location": [
+        -73.9915638,
+        40.71453109999999
+      ]
+    },
+    "stars": 3,
+    "categories": [
+      "South and Central American",
+      "Caribbean",
+      "Cajun"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e933"
+    },
+    "grades": [
+      10,
+      26,
+      7,
+      13,
+      10,
+      0
+    ],
+    "name": "Americas Burger And Wraps",
+    "contact": {
+      "phone": "467-555-0137",
+      "email": "americasburgerandwraps@example.com",
+      "location": [
+        -73.9625052,
+        40.7668083
+      ]
+    },
+    "stars": 4,
+    "categories": [
+      "Pretzels",
+      "Pakistani",
+      "Portuguese"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471effa"
+    },
+    "grades": [
+      2,
+      12,
+      15,
+      26,
+      12
+    ],
+    "name": "China One Fresh Taco",
+    "contact": {
+      "phone": "244-555-0149",
+      "email": "chinaonefreshtaco@example.net",
+      "location": [
+        -74.0219164,
+        40.6304958
+      ]
+    },
+    "stars": 2,
+    "categories": [
+      "Tapas",
+      "Cambodian",
+      "Steak",
+      "Polynesian",
+      "Salads"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471effe"
+    },
+    "grades": [
+      9,
+      13,
+      12,
+      10,
+      12
+    ],
+    "name": "Akdeniz",
+    "contact": {
+      "phone": "952-555-0165",
+      "email": "akdeniz@example.com",
+      "location": [
+        -73.979916,
+        40.756666
+      ]
+    },
+    "stars": 5,
+    "categories": [
+      "Peruvian",
+      "Waffles"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471fecc"
+    },
+    "grades": [
+      10,
+      6,
+      12,
+      26,
+      8
+    ],
+    "name": "Burger King",
+    "contact": {
+      "phone": "978-555-0153",
+      "email": "burgerking@example.com",
+      "location": [
+        -73.8953002,
+        40.7007167
+      ]
+    },
+    "stars": 5,
+    "categories": [
+      "Irish",
+      "Korean",
+      "Korean",
+      "Tea",
+      "Fruits"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471f79e"
+    },
+    "grades": [
+      8,
+      11,
+      7,
+      13
+    ],
+    "name": "Francesco Pizzeria",
+    "contact": {
+      "phone": "680-555-0198",
+      "email": "francescopizzeria@example.org",
+      "location": [
+        -73.98075,
+        40.775237
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Greek",
+      "Pizza"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471ff2e"
+    },
+    "grades": [
+      17,
+      4,
+      8,
+      10,
+      11
+    ],
+    "name": "Phil'S Crummy Corner",
+    "contact": {
+      "phone": "780-555-0150",
+      "email": "phil'scrummycorner@example.net",
+      "location": [
+        -74.00434489999999,
+        40.6811187
+      ]
+    },
+    "stars": 1,
+    "categories": [
+      "Greek",
+      "Russian",
+      "Scandinavian"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471ea8e"
+    },
+    "grades": [
+      12,
+      7,
+      10,
+      13,
+      8
+    ],
+    "name": "Bella Luna",
+    "contact": {
+      "phone": "782-555-0127",
+      "email": "bellaluna@example.net",
+      "location": [
+        -74.0212549,
+        40.6188953
+      ]
+    },
+    "stars": 3,
+    "categories": [
+      "Chinese",
+      "Armenian",
+      "Vietnamese",
+      "Cuban"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471ecfe"
+    },
+    "grades": [
+      10,
+      10,
+      10,
+      11
+    ],
+    "name": "Franchia",
+    "contact": {
+      "phone": "140-555-0183",
+      "email": "franchia@example.org",
+      "location": [
+        -73.98137109999999,
+        40.7476039
+      ]
+    },
+    "stars": 0,
+    "categories": [
+      "Mixed Buffet",
+      "African",
+      "Middle Eastern",
+      "Polish"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471f953"
+    },
+    "grades": [
+      3,
+      10,
+      10,
+      13,
+      11,
+      14,
+      3
+    ],
+    "name": "Best Fuzhou Restaurant",
+    "contact": {
+      "phone": "532-555-0171",
+      "email": "bestfuzhourestaurant@example.net",
+      "location": [
+        -73.992921,
+        40.71684399999999
+      ]
+    },
+    "stars": 0,
+    "categories": [
+      "Dominican",
+      "Turkish"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471e0c5"
+    },
+    "grades": [
+      12,
+      7,
+      13,
+      12,
+      19
+    ],
+    "name": "Cafe Loup",
+    "contact": {
+      "phone": "255-555-0100",
+      "email": "cafeloup@example.org",
+      "location": [
+        -73.9977256,
+        40.7368279
+      ]
+    },
+    "stars": 5,
+    "categories": [
+      "Vegetarian"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471f489"
+    },
+    "grades": [
+      8,
+      13,
+      9,
+      5
+    ],
+    "name": "Side By Side Pizza and Burek",
+    "contact": {
+      "phone": "883-555-0186",
+      "email": "sidebysidepizzaandburek@example.com",
+      "location": [
+        -73.86488949999999,
+        40.8597459
+      ]
+    },
+    "stars": 0,
+    "categories": [
+      "Delicatessen",
+      "Portuguese",
+      "Kosher"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "57506d63f57802807471f943"
+    },
+    "grades": [
+      11,
+      8,
+      5,
+      18
+    ],
+    "name": "No Malice Palace",
+    "contact": {
+      "phone": "406-555-0175",
+      "email": "nomalicepalace@example.net",
+      "location": [
+        -73.983206,
+        40.723004
+      ]
+    },
+    "stars": 3,
+    "categories": [
+      "Smoothies",
+      "Vegetarian",
+      "Tea",
+      "Pretzels",
+      "Eastern European"
+    ]
+  }
+]
